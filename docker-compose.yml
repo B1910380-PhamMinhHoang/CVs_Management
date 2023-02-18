@@ -1,0 +1,90 @@
+version: "3"
+services:
+  cv-service:
+    container_name: cv-service
+    build:
+      context: cv-microservice
+      dockerfile: Dockerfile
+    environment:
+      - FLASK_APP=main.py
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./cv-microservice/:/my-code/
+    networks:
+      - my_network
+
+  folder-service:
+    container_name: folder-service
+    build:
+      context: folder-microservice
+      dockerfile: Dockerfile
+    environment:
+      - FLASK_APP=main.py
+    ports:
+      - "5002:5000"
+    volumes:
+      - ./folder-microservice/:/my-code/
+    networks:
+      - my_network
+
+  preprocessing-service:
+    container_name: preprocessing-service
+    build:
+      context: preprocessing-microservice
+      dockerfile: Dockerfile
+    environment:
+      - FLASK_APP=main.py
+    ports:
+      - "5003:5000"
+    volumes:
+      - ./preprocessing-microservice/:/my-code/
+    networks:
+      - my_network
+
+  inverted-index-service:
+    container_name: inverted-index-service
+    build:
+      context: inverted-index-microservice
+      dockerfile: Dockerfile
+    environment:
+      - FLASK_APP=main.py
+    ports:
+      - "5004:5000"
+    depends_on:
+      - cv-service
+    volumes:
+      - ./inverted-index-microservice/:/my-code/
+    networks:
+      - my_network
+
+  query-engine-service:
+    container_name: query-engine-service
+    build:
+      context: query-engine-microservice
+      dockerfile: Dockerfile
+    environment:
+      - FLASK_APP=main.py
+    ports:
+      - "5005:5000"
+    depends_on:
+      - inverted-index-service
+      - preprocessing-service
+    volumes:
+      - ./query-engine-microservice/:/my-code/
+    networks:
+      - my_network
+
+  frontend-service:
+    container_name: frontend-service
+    build:
+      context: frontend-microservice
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    networks:
+      - my_network
+
+networks:
+  my_network:
+    driver: bridge
